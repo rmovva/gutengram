@@ -5,4 +5,4 @@ wikipedia==1.4.0
 pandas
 matplotlib  # Streamlit uses this under the hood for st.pyplot
 openai
-
+streamlit_plotly_events
