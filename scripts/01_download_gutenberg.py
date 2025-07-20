@@ -1,11 +1,26 @@
 #!/usr/bin/env python
 """
 Download English books via Gutendex and store both .txt and metadata.
-Run:  python 01_download_gutenberg.py
+Run:  python 01_download_gutenberg.py [--delay SECONDS]
 """
-import json, os, re, requests, time
+import argparse
+import json
+import os
+import re
+import requests
+import time
 from pathlib import Path
+
 from tqdm import tqdm
+
+parser = argparse.ArgumentParser(
+    description="Download English books via Gutendex and store both .txt and metadata."
+)
+parser.add_argument(
+    '--delay', type=float, default=1.0,
+    help='seconds to sleep between page requests (default: 1.0)'
+)
+args = parser.parse_args()
 
 BASE = Path(__file__).resolve().parents[1]  # project root
 RAW   = BASE/'data'/'raw'
@@ -38,5 +53,4 @@ with open(META/'metadata_raw.jsonl', 'a', encoding='utf8') as meta_f:
                     path.write_text(txt, encoding='utf8')
             meta_f.write(json.dumps(book, ensure_ascii=False)+'\n')
         next_url = r['next']  # Gutendex gives full URL
-        time.sleep(1)         # be polite
-
+        time.sleep(args.delay)  # be polite
