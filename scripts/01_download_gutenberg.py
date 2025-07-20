@@ -22,11 +22,20 @@ with open(META/'metadata_raw.jsonl', 'a', encoding='utf8') as meta_f:
             book_id = book["id"]
             path    = RAW/f"{book_id}.txt"
             if not path.exists():
-                # Prefer the plaintext utf-8 download
-                txt_url = next(v for v in book['formats'].values()
-                               if v.endswith('.txt') and 'utf-8' in v.lower())
-                txt = requests.get(txt_url, timeout=60).text
-                path.write_text(txt, encoding='utf8')
+                # Select a plaintext download URL, preferring utf-8
+                txt_url = None
+                try:
+                    txt_url = next(v for v in book['formats'].values()
+                                   if v.endswith('.txt') and 'utf-8' in v.lower())
+                except StopIteration:
+                    try:
+                        txt_url = next(v for v in book['formats'].values()
+                                       if v.endswith('.txt'))
+                    except StopIteration:
+                        print(f"[warning] no .txt format for book {book_id}, skipping download")
+                if txt_url:
+                    txt = requests.get(txt_url, timeout=60).text
+                    path.write_text(txt, encoding='utf8')
             meta_f.write(json.dumps(book, ensure_ascii=False)+'\n')
         next_url = r['next']  # Gutendex gives full URL
         time.sleep(1)         # be polite
